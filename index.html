@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yassine Achkhity</title>
+    <style>
+        :root {
+            --terminal-bg: #2E3440;
+            --terminal-text: #D8DEE9;
+            --terminal-green: #A3BE8C;
+            --terminal-prompt: #88C0D0;
+            --terminal-command: #EBCB8B;
+            --terminal-cyan: #8FBCBB;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        #terminal {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #terminal-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--terminal-text);
+        }
+
+        .terminal-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .red { background-color: #BF616A; }
+        .yellow { background-color: #EBCB8B; }
+        .green { background-color: #A3BE8C; }
+
+        #output {
+            min-height: 400px;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .prompt {
+            color: var(--terminal-prompt);
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        #input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--terminal-text);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .command {
+            color: var(--terminal-command);
+        }
+
+        .output-text {
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .section-title {
+            color: var(--terminal-cyan);
+            margin: 15px 0 10px;
+        }
+
+        .project-item {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            #terminal {
+                padding: 15px;
+            }
+
+            #input {
+                font-size: 14px;
+            }
+
+            .prompt {
+                font-size: 14px;
+            }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: var(--terminal-text);
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div id="terminal-header">
+            <div class="terminal-circle red"></div>
+            <div class="terminal-circle yellow"></div>
+            <div class="terminal-circle green"></div>
+        </div>
+        <div id="output"></div>
+        <div class="command-line">
+            <span class="prompt">visitor@yassine:~$</span>
+            <input type="text" id="input" autofocus>
+            <span class="cursor"></span>
+        </div>
+    </div>
+
+    <script>
+        const COMMANDS = {
+            help: `Available commands:
+    help         - Show available commands
+    clear        - Clear terminal
+    about        - About me
+    skills       - Technical skills
+    education    - Education background
+    experience   - Work experience
+    projects     - My projects
+    certifications - My certifications
+    contact      - Contact information
+    download-cv  - Download my CV (PDF)
+    linkedin     - Visit my LinkedIn profile
+    github       - Visit my GitHub profile`,
+
+            about: `About Yassine:
+    AI & Computer Science Student at ENSAM Casablanca
+    Passionate about AI research and problem-solving
+    Seeking remote internship opportunities
+    
+    Location: Rabat, Morocco
+    Current Role: AI Engineer Student
+    Education: Engineering Degree in Computer Science & AI (2023-2026)`,
+
+            skills: `Technical Skills:
+
+    Programming Languages:
+    - Python, C, Java
+
+    Frameworks & Libraries:
+    - Pandas, NumPy, Matplotlib, OpenCV, BeautifulSoup, LangChain
+
+    Databases:
+    - MySQL, SQLite3, MongoDB
+
+    Web Technologies:
+    - HTML, CSS (Tailwind/Bootstrap), JavaScript
+
+    Tools & OS:
+    - Git, GitHub, UML
+    - Linux (Ubuntu), Windows`,
+
+            education: `Education:
+
+    High National School Of Arts and Crafts (ENSAM)
+    - Engineer's Degree in Computer Science & AI (2023-2026)
+    - Preparatory Classes in MPT (2021-2023)
+    
+    Notable Coursework:
+    - Linear Algebra - Calculus - Electronics
+    - Probability - Numerical Analysis`,
+
+            experience: `Work Experience:
+
+    AI Developer Intern | BANK AL MAGHRIB (Jul 2024)
+    - Developed AI-powered PDF Summarization & Q&A Application
+    - Evaluated LLMs and implemented Llama 3 for NLP tasks
+    - Tech Stack: Flask, LangChain, Ollama, MySQL
+    - Designed user-friendly interface with TailwindCSS`,
+
+            projects: `Notable Projects:
+
+    1. JobPath AI
+       - AI-powered job search platform with CV builder
+       - Tech: React, TypeScript, Gemini API, Adzuna API
+       
+    2. Course Library
+       - Course tracking system with user authentication
+       - Tech: Python, Tkinter, SQLite3
+       
+    3. Handwritten Digits Recognition
+       - MNIST-based recognition system
+       - Tech: OpenCV, TensorFlow, NumPy`,
+
+            certifications: `Certifications:
+
+    - Python for Data Science, AI & Development (IBM)
+    - Linux Commands & Shell Scripting (IBM)
+    - Programming Essentials in C (Cisco)
+    - Programming with JavaScript (Meta)`,
+
+            contact: `Contact Information:
+
+    Phone: +212 7-62343816
+    Email: yassineachkhity56@gmail.com
+    LinkedIn: linkedin.com/in/yassine-achkhity
+    GitHub: github.com/yassineachkhity
+    
+    Let's connect and create something amazing! 🚀`,
+
+            'download-cv': `Download my CV:
+    - [Yassine Achkhity - CV.pdf](#)`,
+
+            linkedin: `Visit my LinkedIn profile:
+    - [linkedin.com/in/yassine-achkhity](https://www.linkedin.com/in/yassine-achkhity)`,
+            
+            github: `Visit my GitHub profile:
+    - [github.com/yassineachkhity]`,
+        };
+
+        const terminal = {
+            output: document.getElementById('output'),
+            input: document.getElementById('input'),
+
+            init() {
+                this.printWelcome();
+                this.input.addEventListener('keypress', this.handleCommand.bind(this));
+            },
+
+            printWelcome() {
+                this.print(`
+    Welcome to Yassine's Terminal Portfolio!
+    Type 'help' to see available commands
+    ======================================
+    `);
+            },
+
+            handleCommand(e) {
+                if (e.key !== 'Enter') return;
+
+                const command = this.input.value.trim().toLowerCase();
+                this.print(`visitor@yassine:~$ ${command}`);
+                this.executeCommand(command);
+                this.input.value = '';
+            },
+
+            executeCommand(command) {
+                if (command === 'clear') {
+                    this.output.innerHTML = '';
+                    return;
+                }
+
+                switch(command) {
+                    case 'download-cv':
+                        this.downloadCV();
+                        break;
+                    case 'linkedin':
+                        window.open('https://www.linkedin.com/in/yassine-achkhity', '_blank');
+                        break;
+                    case 'github':
+                        window.open('https://github.com/yassineachkhity', '_blank');
+                        break;
+                }
+
+                const output = COMMANDS[command];
+                if (output) {
+                    this.print(output);
+                } else if (command !== '') {
+                    this.print(`Command not found: ${command}\nTry 'help' for available commands`);
+                }
+            },
+
+            downloadCV() {
+                const link = document.createElement('a');
+                link.href = 'yassineachkhity-cv.pdf'; 
+                link.download = 'Yassine_Achkhity_CV.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            },
+
+            print(text) {
+                const output = document.createElement('div');
+                output.className = 'output-text';
+                output.textContent = text;
+                this.output.appendChild(output);
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        };
+
+        terminal.init();
+    </script>
+</body>
+</html>
